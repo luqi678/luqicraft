@@ -64,5 +64,5 @@
 ---
 
 > 作者: <no value>  
-> URL: http://localhost:1313/about/  
+> URL: https://luqi678.github.io/luqicraft/about/  
 
