@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+    <meta name="robots" content="noodp" />
+    <title>基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 - 路奇的个人主页</title><meta name="author" content="">
+<meta name="description" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 背景 在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。
+"><meta name="keywords" content='场景, 文件管理, POI'>
+  <meta itemprop="name" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题">
+  <meta itemprop="description" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 背景 在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。">
+  <meta itemprop="datePublished" content="2025-06-09T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-06-09T00:00:00+00:00">
+  <meta itemprop="wordCount" content="568">
+  <meta itemprop="keywords" content="场景,文件管理,POI"><meta property="og:url" content="http://localhost:1313/%E5%9F%BA%E4%BA%8Eeasyexcel-%E7%BA%BF%E7%A8%8B%E6%B1%A0-%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98/">
+  <meta property="og:site_name" content="路奇的个人主页">
+  <meta property="og:title" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题">
+  <meta property="og:description" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 背景 在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="post">
+    <meta property="article:published_time" content="2025-06-09T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-06-09T00:00:00+00:00">
+    <meta property="article:tag" content="场景">
+    <meta property="article:tag" content="文件管理">
+    <meta property="article:tag" content="POI">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题">
+  <meta name="twitter:description" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 背景 在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。">
+<meta name="application-name" content="FixIt">
+<meta name="apple-mobile-web-app-title" content="FixIt"><meta name="theme-color" data-light="#f8f8f8" data-dark="#252627" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" type="text/html" href="http://localhost:1313/%E5%9F%BA%E4%BA%8Eeasyexcel-%E7%BA%BF%E7%A8%8B%E6%B1%A0-%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98/" title="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 - 路奇的个人主页" /><link rel="alternate" type="text/markdown" href="http://localhost:1313/%E5%9F%BA%E4%BA%8Eeasyexcel-%E7%BA%BF%E7%A8%8B%E6%B1%A0-%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98/index.md" title="基于EasyExcel+线程池+定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题 - 路奇的个人主页"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" href="/lib/fontawesome-free/all.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" href="/lib/animate/animate.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BlogPosting",
+    "headline": "基于EasyExcel+线程池+定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题",
+    "inLanguage": "zh-CN",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "http:\/\/localhost:1313\/%E5%9F%BA%E4%BA%8Eeasyexcel-%E7%BA%BF%E7%A8%8B%E6%B1%A0-%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98\/"
+    },"genre": "post","keywords": "场景, 文件管理, POI","wordcount":  568 ,
+    "url": "http:\/\/localhost:1313\/%E5%9F%BA%E4%BA%8Eeasyexcel-%E7%BA%BF%E7%A8%8B%E6%B1%A0-%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98\/","datePublished": "2025-06-09T00:00:00+00:00","dateModified": "2025-06-09T00:00:00+00:00","publisher": {
+      "@type": "Organization",
+      "name": ""},"author": {
+        "@type": "Person",
+        "name": "作者"
+      },"description": ""
+  }
+  </script><script src="/js/head/color-scheme.min.js"></script></head>
+  <body data-header-desktop="sticky" data-header-mobile="auto"><div class="wrapper" data-page-style="normal"><header class="desktop animate__faster" id="header-desktop">
+  <div class="header-wrapper">
+    <div class="header-title">
+      <a href="/" title="路奇的个人主页"><span class="header-title-text">路奇的个人主页</span></a><span class="header-subtitle"></span></div>
+    <nav>
+      <ul class="menu"><li class="menu-item">
+              <a class="menu-link" href="/archives/"><i class="fa-solid fa-archive fa-fw fa-sm" aria-hidden="true"></i> Archives</a></li><li class="menu-item">
+              <a class="menu-link" href="/categories/"><i class="fa-solid fa-folder-tree fa-fw fa-sm" aria-hidden="true"></i> Categories</a></li><li class="menu-item">
+              <a class="menu-link" href="/tags/"><i class="fa-solid fa-tags fa-fw fa-sm" aria-hidden="true"></i> Tags</a></li><li class="menu-item delimiter"></li><li class="menu-item theme-switch" title="切换主题">
+          <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+        </li></ul>
+    </nav>
+  </div>
+</header><header class="mobile animate__faster" id="header-mobile">
+  <div class="header-container">
+    <div class="header-wrapper">
+      <div class="header-title">
+        <a href="/" title="路奇的个人主页"><span class="header-title-text">路奇的个人主页</span></a><span class="header-subtitle"></span></div>
+      <div class="menu-toggle" id="menu-toggle-mobile">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <nav>
+      <ul class="menu" id="menu-mobile"><li class="menu-item"><a class="menu-link" href="/archives/"><i class="fa-solid fa-archive fa-fw fa-sm" aria-hidden="true"></i> Archives</a></li><li class="menu-item"><a class="menu-link" href="/categories/"><i class="fa-solid fa-folder-tree fa-fw fa-sm" aria-hidden="true"></i> Categories</a></li><li class="menu-item"><a class="menu-link" href="/tags/"><i class="fa-solid fa-tags fa-fw fa-sm" aria-hidden="true"></i> Tags</a></li><li class="menu-item menu-system">
+          <span class="menu-system-item theme-switch" title="切换主题"><i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i></span></li>
+      </ul>
+    </nav>
+  </div>
+</header><main class="container"><article class="page single special">
+    <div class="header"><h1 class="single-title animate__animated animate__pulse animate__faster">基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题</h1></div><div class="content" id="content"><h2 class="heading-element" id="基于easyexcel线程池定时轮询服务解决poi文件导出大量数据时的内存溢出及超时问题"><span>基于EasyExcel+线程池+定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题</span>
+  <a href="#%e5%9f%ba%e4%ba%8eeasyexcel%e7%ba%bf%e7%a8%8b%e6%b1%a0%e5%ae%9a%e6%97%b6%e8%bd%ae%e8%af%a2%e6%9c%8d%e5%8a%a1%e8%a7%a3%e5%86%b3poi%e6%96%87%e4%bb%b6%e5%af%bc%e5%87%ba%e5%a4%a7%e9%87%8f%e6%95%b0%e6%8d%ae%e6%97%b6%e7%9a%84%e5%86%85%e5%ad%98%e6%ba%a2%e5%87%ba%e5%8f%8a%e8%b6%85%e6%97%b6%e9%97%ae%e9%a2%98" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><h2 class="heading-element" id="背景"><span>背景</span>
+  <a href="#%e8%83%8c%e6%99%af" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><p>在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。</p>
+<h3 class="heading-element" id="原实现"><span>原实现</span>
+  <a href="#%e5%8e%9f%e5%ae%9e%e7%8e%b0" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><p>原系统使用的是POI的XSSFWorkbook,采用的方式也是同步执行。点击导出后等待文件导出完成。</p>
+<h2 class="heading-element" id="技术选型"><span>技术选型</span>
+  <a href="#%e6%8a%80%e6%9c%af%e9%80%89%e5%9e%8b" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><p>针对数据量大导出会有内存溢出的问题可以选用，SXSSFWorkbook和EasyExcel方式。</p>
+<p>但是考虑到不影响原来的导出功能模块，以及POI的代码复杂度高。因此采用EasyExcel的方式。</p>
+<p>针对导出时间长的问题，采用线程池+定时服务轮询的方式异步导出excel，上传至小文件系统。之后再导出列表中提供下载连接。</p>
+<h2 class="heading-element" id="具体实现"><span>具体实现</span>
+  <a href="#%e5%85%b7%e4%bd%93%e5%ae%9e%e7%8e%b0" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><p>controller层 接受用户的文件导出请求</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">@Override
+</span></span><span class="line"><span class="cl">public Integer exportBcontractJoinAndContractGx(BcontractJoinPageQryVo paramVo) {
+</span></span><span class="line"><span class="cl">    //写入轮询记录表中等待轮询任务执行
+</span></span><span class="line"><span class="cl">    SchdulerStrategyConfigQueryVo param = new SchdulerStrategyConfigQueryVo();
+</span></span><span class="line"><span class="cl">    Optional.of(SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400.getCode()).ifPresent(param::setObjType);
+</span></span><span class="line"><span class="cl">    Optional.of(SalGxCommonEnum.STATE_70A.getCode()).ifPresent(param::setSchedulerStatusCd);
+</span></span><span class="line"><span class="cl">    param.setCreateStaff(BaseContext.getStaffId());
+</span></span><span class="line"><span class="cl">    if(CollectionUtils.isNotEmpty(SchdulerStrategyConfig.repository().complexQuery(param))){
+</span></span><span class="line"><span class="cl">       throw new BaseAppException(&#34;后台正在导出广西合同到期清单_全部合同数据,请后台未导出或导出成功后再试！&#34;);
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    JSONObject jsonObject = PmsBeanUtils.mapToBean(JSONObject.class, paramVo);
+</span></span><span class="line"><span class="cl">    jsonObject.put(&#34;info&#34;,BaseContext.getBaseContextInfo());
+</span></span><span class="line"><span class="cl">    String paramStr = Optional.of(JSONObject.toJSONString(jsonObject)).filter(StringUtils::isNotBlank).orElse(null);
+</span></span><span class="line"><span class="cl">    return SalCommonUtils.saveSchdulerStrategyConfigEntity(null,SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400.getCode(),null,
+</span></span><span class="line"><span class="cl">          SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400_KEY.getCode(),paramStr);
+</span></span><span class="line"><span class="cl">}</span></span></code></pre></td></tr></table>
+</div>
+</div><p>具体导出实现</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 导出excel
+</span></span></span><span class="line"><span class="cl"><span class="cm"> *
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param fileName excel文件名称
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param sheetName excel sheet名称
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param list 数据
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param clazz
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param response
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">exportExcel</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">fileName</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">sheetName</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="n">clazz</span><span class="p">,</span><span class="w"> </span><span class="n">HttpServletResponse</span><span class="w"> </span><span class="n">response</span><span class="p">){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ServletOutputStream</span><span class="w"> </span><span class="n">outputStream</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">response</span><span class="p">.</span><span class="na">setContentType</span><span class="p">(</span><span class="s">&#34;application/vnd.ms-excel&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">response</span><span class="p">.</span><span class="na">setCharacterEncoding</span><span class="p">(</span><span class="s">&#34;utf8&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">response</span><span class="p">.</span><span class="na">setHeader</span><span class="p">(</span><span class="s">&#34;Content-Disposition&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;attachment; filename=&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">fileName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;.xlsx&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">outputStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">response</span><span class="p">.</span><span class="na">getOutputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">EasyExcel</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">outputStream</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">clazz</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">excelType</span><span class="p">(</span><span class="n">ExcelTypeEnum</span><span class="p">.</span><span class="na">XLSX</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">sheet</span><span class="p">(</span><span class="n">sheetName</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">doWrite</span><span class="p">(</span><span class="n">list</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">outputStream</span><span class="p">.</span><span class="na">flush</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&#34;导出excel异常：{}&#34;</span><span class="p">,</span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">e</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ByteArrayOutputStream</span><span class="w"> </span><span class="n">outputSteam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ByteArrayOutputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">EasyExcel</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">outputStream</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">head</span><span class="p">(</span><span class="n">clazz</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">excelType</span><span class="p">(</span><span class="n">ExcelTypeEnum</span><span class="p">.</span><span class="na">XLSX</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">sheet</span><span class="p">(</span><span class="n">sheetName</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">.</span><span class="na">doWrite</span><span class="p">(</span><span class="n">list</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">outputSteam</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>线程代码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">com.ffcs.gewp.scheduler.sal.service.manager.Impl</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.crmd.platform.base.utils.type.CollectionUtils</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.pub.context.BaseContext</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.pub.context.BaseContextInfo</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.pub.enums.DataMergeTypeEnum</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.pub.utils.SpringUtil</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.pub.utils.ThreadPoolUtil</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.service.strategy.BaseSchedulerStrategy</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.service.vo.RetBaseVo</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.kernel.service.vo.SchdulerStrategyConfigBaseVo</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.constants.enums.SalCommonEnum</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.service.convert.DTO2VoConvert</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.service.util.SalCommonUtils</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.visitmanage.entity.SchdulerStrategyConfig</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.visitmanage.manager.ISchdulerStrategyConfigManager</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.visitmanage.vo.SchdulerStrategyConfigVo</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.sal.visitmanage.vo.query.SchdulerStrategyConfigQueryVo</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.scheduler.sal.service.manager.ISchedulerStrategyManager</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.ffcs.gewp.scheduler.sal.service.param.SyncDataInParam</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.slf4j.Logger</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.slf4j.LoggerFactory</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.stereotype.Service</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.Arrays</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.List</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.Optional</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">java.util.concurrent.ThreadPoolExecutor</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 通用轮询任务实现类
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author taowy
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Service</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">SchedulerStrategyManagerImpl</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">ISchedulerStrategyManager</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">SchedulerStrategyManagerImpl</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Autowired</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">ISchdulerStrategyConfigManager</span><span class="w"> </span><span class="n">schdulerStrategyConfigManager</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @description 轮询多线程执行任务,注意控制线程安全和死锁
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @param param 入参
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">SyncDataInParam</span><span class="w"> </span><span class="n">param</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;[轮询任务策略模式]:开始准备执行轮询策略任务...&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">SchdulerStrategyConfigQueryVo</span><span class="w"> </span><span class="n">paramVo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SchdulerStrategyConfigQueryVo</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//查找待执行状态</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Optional</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">STATE_70A</span><span class="p">.</span><span class="na">getCode</span><span class="p">()).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">paramVo</span><span class="p">::</span><span class="n">setSchedulerStatusCd</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">paramVo</span><span class="p">.</span><span class="na">setAppModule</span><span class="p">(</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">APP_MODULE_SAL</span><span class="p">.</span><span class="na">getCode</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//未处理轮询任务列表</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">SchdulerStrategyConfig</span><span class="o">&gt;</span><span class="w"> </span><span class="n">noDealTaskList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SchdulerStrategyConfig</span><span class="p">.</span><span class="na">repository</span><span class="p">().</span><span class="na">complexQuery</span><span class="p">(</span><span class="n">paramVo</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">CollectionUtils</span><span class="p">.</span><span class="na">isEmpty</span><span class="p">(</span><span class="n">noDealTaskList</span><span class="p">)){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;[轮询任务策略模式]:未查询到可执行的策略轮询任务...&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//设置多线程的本地地线程变量</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">BaseContextInfo</span><span class="w"> </span><span class="n">baseContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BaseContext</span><span class="p">.</span><span class="na">getBaseContextInfo</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ThreadPoolExecutor</span><span class="w"> </span><span class="n">threadPoolExecutor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ThreadPoolUtil</span><span class="p">.</span><span class="na">standardThreadPool</span><span class="p">(</span><span class="n">4</span><span class="p">,</span><span class="w"> </span><span class="n">8</span><span class="p">,</span><span class="w"> </span><span class="n">2000L</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;[轮询任务策略模式]:线程池创建成功,当前线程池核心线程数为4,最大线程数为8&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">noDealTaskList</span><span class="p">.</span><span class="na">forEach</span><span class="p">(</span><span class="n">entity</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">entity</span><span class="p">.</span><span class="na">setSchedulerStatusCd</span><span class="p">(</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">STATE_70B</span><span class="p">.</span><span class="na">getCode</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">entity</span><span class="p">.</span><span class="na">update</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">threadPoolExecutor</span><span class="p">.</span><span class="na">execute</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="p">(</span><span class="n">Optional</span><span class="p">.</span><span class="na">ofNullable</span><span class="p">(</span><span class="n">entity</span><span class="p">).</span><span class="na">isPresent</span><span class="p">()){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">//执行策略</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">this</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span><span class="n">baseContext</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">});</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">});</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//线程池不再接收线程任务</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">threadPoolExecutor</span><span class="p">.</span><span class="na">shutdown</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;[轮询任务策略模式]:当前线程池任务已添加完成&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="n">SchdulerStrategyConfig</span><span class="w"> </span><span class="n">entity</span><span class="p">,</span><span class="n">BaseContextInfo</span><span class="w"> </span><span class="n">baseContext</span><span class="p">){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">SchdulerStrategyConfigBaseVo</span><span class="w"> </span><span class="n">baseVo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DTO2VoConvert</span><span class="p">.</span><span class="na">INSTANCE</span><span class="p">.</span><span class="na">toVo</span><span class="p">(</span><span class="n">entity</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//设置线程名称</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Optional</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&#34;thread-pool-thread-&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">entity</span><span class="p">.</span><span class="na">getStrategyName</span><span class="p">()).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">()::</span><span class="n">setName</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//设置本地线程变量</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Optional</span><span class="p">.</span><span class="na">ofNullable</span><span class="p">(</span><span class="n">baseContext</span><span class="p">).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">BaseContext</span><span class="p">::</span><span class="n">setBaseContextInfo</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//获取策略类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">BaseSchedulerStrategy</span><span class="w"> </span><span class="n">schedulerStrategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpringUtil</span><span class="p">.</span><span class="na">getBean</span><span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="na">getStrategyBeanId</span><span class="p">(),</span><span class="w"> </span><span class="n">BaseSchedulerStrategy</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//执行轮询任务策略</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">RetBaseVo</span><span class="w"> </span><span class="n">retDto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Optional</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">baseVo</span><span class="p">).</span><span class="na">map</span><span class="p">(</span><span class="n">schedulerStrategy</span><span class="p">::</span><span class="n">execute</span><span class="p">).</span><span class="na">orElse</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Optional</span><span class="p">.</span><span class="na">ofNullable</span><span class="p">(</span><span class="n">retDto</span><span class="p">).</span><span class="na">map</span><span class="p">(</span><span class="n">RetBaseVo</span><span class="p">::</span><span class="n">getDetailMsg</span><span class="p">).</span><span class="na">map</span><span class="p">(</span><span class="n">o</span><span class="o">-&gt;</span><span class="n">SalCommonUtils</span><span class="p">.</span><span class="na">cutString</span><span class="p">(</span><span class="n">o</span><span class="p">,</span><span class="n">4000</span><span class="p">)).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">entity</span><span class="p">::</span><span class="n">setRemark</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Optional</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">STATE_70C</span><span class="p">.</span><span class="na">getCode</span><span class="p">()).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">entity</span><span class="p">::</span><span class="n">setSchedulerStatusCd</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">e</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Optional</span><span class="p">.</span><span class="na">ofNullable</span><span class="p">(</span><span class="n">SalCommonUtils</span><span class="p">.</span><span class="na">cutString</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">(),</span><span class="n">4000</span><span class="p">)).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">entity</span><span class="p">::</span><span class="n">setRemark</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Optional</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">STATE_70E</span><span class="p">.</span><span class="na">getCode</span><span class="p">()).</span><span class="na">ifPresent</span><span class="p">(</span><span class="n">entity</span><span class="p">::</span><span class="n">setSchedulerStatusCd</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">updateStrategyConfig</span><span class="p">(</span><span class="n">entity</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 修改轮询任务策略配置
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @param entity
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @return
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="nf">updateStrategyConfig</span><span class="p">(</span><span class="n">SchdulerStrategyConfig</span><span class="w"> </span><span class="n">entity</span><span class="p">){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">SchdulerStrategyConfigVo</span><span class="w"> </span><span class="n">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SchdulerStrategyConfigVo</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">param</span><span class="p">.</span><span class="na">setSchedulerConfigId</span><span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="na">getSchedulerConfigId</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">param</span><span class="p">.</span><span class="na">setSchedulerStatusCd</span><span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="na">getSchedulerStatusCd</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">param</span><span class="p">.</span><span class="na">setRemark</span><span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="na">getRemark</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">param</span><span class="p">.</span><span class="na">setMergeType</span><span class="p">(</span><span class="n">DataMergeTypeEnum</span><span class="p">.</span><span class="na">MOD</span><span class="p">.</span><span class="na">getCode</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">param</span><span class="p">.</span><span class="na">setMergeProperties</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">SCHEDULER_STATUS_CD</span><span class="p">.</span><span class="na">getCode</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">,</span><span class="n">SalCommonEnum</span><span class="p">.</span><span class="na">REMARK</span><span class="p">.</span><span class="na">getCode</span><span class="p">()));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">schdulerStrategyConfigManager</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">entity</span><span class="p">.</span><span class="na">getSchedulerConfigId</span><span class="p">(),</span><span class="kc">null</span><span class="p">,</span><span class="n">param</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 class="heading-element" id="其他问题"><span>其他问题</span>
+  <a href="#%e5%85%b6%e4%bb%96%e9%97%ae%e9%a2%98" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><h3 class="heading-element" id="apache-poi"><span>Apache POI</span>
+  <a href="#apache-poi" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><ol>
+<li><strong>HSSFWorkbook</strong><font style="color:rgb(13, 13, 13);">：代表一个 Excel 文件，对应于 Excel 97-2003 格式的 </font><strong>.xls</strong><font style="color:rgb(13, 13, 13);"> 文件。它使用 HSSF（Horrible Spreadsheet Format）来处理 Excel 文件，适用于较旧版本的 Excel。</font></li>
+<li><strong>XSSFWorkbook</strong><font style="color:rgb(13, 13, 13);">：代表一个 Excel 文件，对应于 Excel 2007+ 格式的 </font><strong>.xlsx</strong><font style="color:rgb(13, 13, 13);"> 文件。它使用 XSSF（XML Spreadsheet Format）来处理 Excel 文件，支持更大的数据量和更多的功能，适用于较新版本的 Excel。</font></li>
+<li><strong>SXSSFWorkbook</strong><font style="color:rgb(13, 13, 13);">：是 XSSFWorkbook 的扩展，用于处理大量数据的导出。它使用了一种流式写入（Streaming Write）的方式，可以将数据写入到临时文件中，从而避免内存溢出的问题。</font></li>
+<li><strong>XSSFWorkbook（Streaming）</strong><font style="color:rgb(13, 13, 13);">：另外还有一种基于 XML 文件的流式读取（Streaming Read）方式，可以读取大量数据的 Excel 文件而不会导致内存溢出，但是这种方式并不是 POI 提供的官方支持，而是一些第三方库提供的扩展。</font></li>
+</ol>
+<h3 class="heading-element" id="easyexcel"><span>EasyExcel</span>
+  <a href="#easyexcel" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><blockquote>
+<p>更新: 2024-05-02 21:52:13<br>
+原文: <a href="https://www.yuque.com/lujianuse/notes/xag6e59tisz88xr2"target="_blank" rel="external nofollow noopener noreferrer">https://www.yuque.com/lujianuse/notes/xag6e59tisz88xr2</a></p></blockquote>
+</div></article></main><footer class="footer">
+    <div class="footer-container"><div class="footer-line powered">由 <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreferrer" title="Hugo 0.147.8"><img class="hugo-icon" src="/images/hugo.min.svg" alt="Hugo logo" /> Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/hugo-fixit/FixIt" target="_blank" rel="external" title="FixIt v0.3.20"><img class="fixit-icon" src="/images/fixit.min.svg" alt="FixIt logo" /> FixIt</a>
+        </div><div class="footer-line copyright" itemscope itemtype="http://schema.org/CreativeWork"><i class="fa-regular fa-copyright fa-fw" aria-hidden="true"></i>
+            <span itemprop="copyrightYear">2025</span><span class="author" itemprop="copyrightHolder">
+              <a href="/"></a></span></div></div>
+  </footer></div><div class="widgets"><div class="fixed-buttons animate__faster d-none"><div class="fixed-button back-to-top" role="button" aria-label="回到顶部"><i class="fa-solid fa-arrow-up fa-fw" aria-hidden="true"></i><span class="variant-numeric d-none">0%</span>
+        </div></div><div id="mask"></div><noscript>
+    <div class="noscript-warning">该网站在启用 JavaScript 的情况下效果最佳。</div>
+  </noscript>
+</div><link rel="preload" href="/lib/katex/katex.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/lib/katex/katex.min.css"></noscript><link rel="stylesheet" href="/lib/cookieconsent/cookieconsent.min.css"><script src="/lib/sharer/sharer.min.js" async defer></script><script src="/lib/katex/katex.min.js" defer></script><script src="/lib/katex/auto-render.min.js" defer></script><script src="/lib/katex/copy-tex.min.js" defer></script><script src="/lib/katex/mhchem.min.js" defer></script><script src="/lib/cookieconsent/cookieconsent.min.js" defer></script><script>window.config={"code":{"copyTitle":"复制到剪贴板","editLockTitle":"锁定可编辑代码块","editUnLockTitle":"解锁可编辑代码块","editable":true,"maxShownLines":10},"comment":{"enable":false},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验。"},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":true,"left":"\\begin{equation}","right":"\\end{equation}"},{"display":true,"left":"\\begin{equation*}","right":"\\end{equation*}"},{"display":true,"left":"\\begin{align}","right":"\\end{align}"},{"display":true,"left":"\\begin{align*}","right":"\\end{align*}"},{"display":true,"left":"\\begin{alignat}","right":"\\end{alignat}"},{"display":true,"left":"\\begin{alignat*}","right":"\\end{alignat*}"},{"display":true,"left":"\\begin{gather}","right":"\\end{gather}"},{"display":true,"left":"\\begin{CD}","right":"\\end{CD}"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"version":"v0.3.20"};console.log('Page config:', window.config);</script><script src="/js/theme.min.js" defer></script></body>
+</html>

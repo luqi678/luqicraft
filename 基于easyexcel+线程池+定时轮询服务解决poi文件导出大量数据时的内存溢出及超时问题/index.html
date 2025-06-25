@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>My New Hugo Site</title>
+<meta name="keywords" content="">
+<meta name="description" content="基于EasyExcel&#43;线程池&#43;定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题
+背景
+在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。
+原实现
+原系统使用的是POI的XSSFWorkbook,采用的方式也是同步执行。点击导出后等待文件导出完成。
+技术选型
+针对数据量大导出会有内存溢出的问题可以选用，SXSSFWorkbook和EasyExcel方式。
+但是考虑到不影响原来的导出功能模块，以及POI的代码复杂度高。因此采用EasyExcel的方式。
+针对导出时间长的问题，采用线程池&#43;定时服务轮询的方式异步导出excel，上传至小文件系统。之后再导出列表中提供下载连接。
+具体实现
+controller层 接受用户的文件导出请求
+@Override
+public Integer exportBcontractJoinAndContractGx(BcontractJoinPageQryVo paramVo) {
+    //写入轮询记录表中等待轮询任务执行
+    SchdulerStrategyConfigQueryVo param = new SchdulerStrategyConfigQueryVo();
+    Optional.of(SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400.getCode()).ifPresent(param::setObjType);
+    Optional.of(SalGxCommonEnum.STATE_70A.getCode()).ifPresent(param::setSchedulerStatusCd);
+    param.setCreateStaff(BaseContext.getStaffId());
+    if(CollectionUtils.isNotEmpty(SchdulerStrategyConfig.repository().complexQuery(param))){
+       throw new BaseAppException(&#34;后台正在导出广西合同到期清单_全部合同数据,请后台未导出或导出成功后再试！&#34;);
+    }
+    JSONObject jsonObject = PmsBeanUtils.mapToBean(JSONObject.class, paramVo);
+    jsonObject.put(&#34;info&#34;,BaseContext.getBaseContextInfo());
+    String paramStr = Optional.of(JSONObject.toJSONString(jsonObject)).filter(StringUtils::isNotBlank).orElse(null);
+    return SalCommonUtils.saveSchdulerStrategyConfigEntity(null,SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400.getCode(),null,
+          SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400_KEY.getCode(),paramStr);
+}
+具体导出实现
+
+/**
+ * 导出excel
+ *
+ * @param fileName excel文件名称
+ * @param sheetName excel sheet名称
+ * @param list 数据
+ * @param clazz
+ * @param response
+ */
+public static void exportExcel(String fileName, String sheetName, List list, Class clazz, HttpServletResponse response){
+    ServletOutputStream outputStream;
+    try {
+        response.setContentType(&#34;application/vnd.ms-excel&#34;);
+        response.setCharacterEncoding(&#34;utf8&#34;);
+        response.setHeader(&#34;Content-Disposition&#34;, &#34;attachment; filename=&#34; &#43; fileName &#43; &#34;.xlsx&#34;);
+        outputStream = response.getOutputStream();
+        EasyExcel.write(outputStream)
+                .head(clazz)
+                .excelType(ExcelTypeEnum.XLSX)
+                .sheet(sheetName)
+                .doWrite(list);
+        outputStream.flush();
+    } catch (Exception e) {
+        log.error(&#34;导出excel异常：{}&#34;,e.getMessage());
+        e.printStackTrace();
+    }
+
+
+    ByteArrayOutputStream outputSteam = new ByteArrayOutputStream();
+    EasyExcel.write(outputStream)
+        .head(clazz)
+        .excelType(ExcelTypeEnum.XLSX)
+        .sheet(sheetName)
+        .doWrite(list);
+    outputSteam.toByteArray();
+    
+}
+线程代码">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/%E5%9F%BA%E4%BA%8Eeasyexcel&#43;%E7%BA%BF%E7%A8%8B%E6%B1%A0&#43;%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.36819bea596090d8b48cf10d9831382996197aa7e4fc86f792f7c08c9ca4d23b.css" integrity="sha256-NoGb6llgkNi0jPENmDE4KZYZeqfk/Ib3kvfAjJyk0js=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="http://localhost:1313/%E5%9F%BA%E4%BA%8Eeasyexcel&#43;%E7%BA%BF%E7%A8%8B%E6%B1%A0&#43;%E5%AE%9A%E6%97%B6%E8%BD%AE%E8%AF%A2%E6%9C%8D%E5%8A%A1%E8%A7%A3%E5%86%B3poi%E6%96%87%E4%BB%B6%E5%AF%BC%E5%87%BA%E5%A4%A7%E9%87%8F%E6%95%B0%E6%8D%AE%E6%97%B6%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%8F%8A%E8%B6%85%E6%97%B6%E9%97%AE%E9%A2%98/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="My New Hugo Site (Alt + H)">My New Hugo Site</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      
+    </h1>
+    <div class="post-meta">
+
+</div>
+  </header> 
+  <div class="post-content"><h1 id="基于easyexcel线程池定时轮询服务解决poi文件导出大量数据时的内存溢出及超时问题">基于EasyExcel+线程池+定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题<a hidden class="anchor" aria-hidden="true" href="#基于easyexcel线程池定时轮询服务解决poi文件导出大量数据时的内存溢出及超时问题">#</a></h1>
+<h2 id="背景">背景<a hidden class="anchor" aria-hidden="true" href="#背景">#</a></h2>
+<p>在一个全部合同导出功能中，需要导出 Excel, 但是全部合同的数量比较大，用原本的 Apache POI 库导出数据时因其内存占用较高会导致内存溢出问题。同时，数据处理过程比较耗时，导致用户等待时间过长甚至有可能请求超时。造成用户体验非常差，为解决这些问题，我采用了基于 EasyExcel 和线程池的解决方案。</p>
+<h3 id="原实现">原实现<a hidden class="anchor" aria-hidden="true" href="#原实现">#</a></h3>
+<p>原系统使用的是POI的XSSFWorkbook,采用的方式也是同步执行。点击导出后等待文件导出完成。</p>
+<h2 id="技术选型">技术选型<a hidden class="anchor" aria-hidden="true" href="#技术选型">#</a></h2>
+<p>针对数据量大导出会有内存溢出的问题可以选用，SXSSFWorkbook和EasyExcel方式。</p>
+<p>但是考虑到不影响原来的导出功能模块，以及POI的代码复杂度高。因此采用EasyExcel的方式。</p>
+<p>针对导出时间长的问题，采用线程池+定时服务轮询的方式异步导出excel，上传至小文件系统。之后再导出列表中提供下载连接。</p>
+<h2 id="具体实现">具体实现<a hidden class="anchor" aria-hidden="true" href="#具体实现">#</a></h2>
+<p>controller层 接受用户的文件导出请求</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-plain" data-lang="plain"><span style="display:flex;"><span>@Override
+</span></span><span style="display:flex;"><span>public Integer exportBcontractJoinAndContractGx(BcontractJoinPageQryVo paramVo) {
+</span></span><span style="display:flex;"><span>    //写入轮询记录表中等待轮询任务执行
+</span></span><span style="display:flex;"><span>    SchdulerStrategyConfigQueryVo param = new SchdulerStrategyConfigQueryVo();
+</span></span><span style="display:flex;"><span>    Optional.of(SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400.getCode()).ifPresent(param::setObjType);
+</span></span><span style="display:flex;"><span>    Optional.of(SalGxCommonEnum.STATE_70A.getCode()).ifPresent(param::setSchedulerStatusCd);
+</span></span><span style="display:flex;"><span>    param.setCreateStaff(BaseContext.getStaffId());
+</span></span><span style="display:flex;"><span>    if(CollectionUtils.isNotEmpty(SchdulerStrategyConfig.repository().complexQuery(param))){
+</span></span><span style="display:flex;"><span>       throw new BaseAppException(&#34;后台正在导出广西合同到期清单_全部合同数据,请后台未导出或导出成功后再试！&#34;);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    JSONObject jsonObject = PmsBeanUtils.mapToBean(JSONObject.class, paramVo);
+</span></span><span style="display:flex;"><span>    jsonObject.put(&#34;info&#34;,BaseContext.getBaseContextInfo());
+</span></span><span style="display:flex;"><span>    String paramStr = Optional.of(JSONObject.toJSONString(jsonObject)).filter(StringUtils::isNotBlank).orElse(null);
+</span></span><span style="display:flex;"><span>    return SalCommonUtils.saveSchdulerStrategyConfigEntity(null,SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400.getCode(),null,
+</span></span><span style="display:flex;"><span>          SalGxCommonEnum.SCHDULER_STRATEGY_CONFIG_OBJ_TYPE_2400_KEY.getCode(),paramStr);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>具体导出实现</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * 导出excel
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param fileName excel文件名称
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param sheetName excel sheet名称
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param list 数据
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param clazz
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @param response
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">exportExcel</span>(String fileName, String sheetName, List list, Class clazz, HttpServletResponse response){
+</span></span><span style="display:flex;"><span>    ServletOutputStream outputStream;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>        response.<span style="color:#a6e22e">setContentType</span>(<span style="color:#e6db74">&#34;application/vnd.ms-excel&#34;</span>);
+</span></span><span style="display:flex;"><span>        response.<span style="color:#a6e22e">setCharacterEncoding</span>(<span style="color:#e6db74">&#34;utf8&#34;</span>);
+</span></span><span style="display:flex;"><span>        response.<span style="color:#a6e22e">setHeader</span>(<span style="color:#e6db74">&#34;Content-Disposition&#34;</span>, <span style="color:#e6db74">&#34;attachment; filename=&#34;</span> <span style="color:#f92672">+</span> fileName <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;.xlsx&#34;</span>);
+</span></span><span style="display:flex;"><span>        outputStream <span style="color:#f92672">=</span> response.<span style="color:#a6e22e">getOutputStream</span>();
+</span></span><span style="display:flex;"><span>        EasyExcel.<span style="color:#a6e22e">write</span>(outputStream)
+</span></span><span style="display:flex;"><span>                .<span style="color:#a6e22e">head</span>(clazz)
+</span></span><span style="display:flex;"><span>                .<span style="color:#a6e22e">excelType</span>(ExcelTypeEnum.<span style="color:#a6e22e">XLSX</span>)
+</span></span><span style="display:flex;"><span>                .<span style="color:#a6e22e">sheet</span>(sheetName)
+</span></span><span style="display:flex;"><span>                .<span style="color:#a6e22e">doWrite</span>(list);
+</span></span><span style="display:flex;"><span>        outputStream.<span style="color:#a6e22e">flush</span>();
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">catch</span> (Exception e) {
+</span></span><span style="display:flex;"><span>        log.<span style="color:#a6e22e">error</span>(<span style="color:#e6db74">&#34;导出excel异常：{}&#34;</span>,e.<span style="color:#a6e22e">getMessage</span>());
+</span></span><span style="display:flex;"><span>        e.<span style="color:#a6e22e">printStackTrace</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    ByteArrayOutputStream outputSteam <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> ByteArrayOutputStream();
+</span></span><span style="display:flex;"><span>    EasyExcel.<span style="color:#a6e22e">write</span>(outputStream)
+</span></span><span style="display:flex;"><span>        .<span style="color:#a6e22e">head</span>(clazz)
+</span></span><span style="display:flex;"><span>        .<span style="color:#a6e22e">excelType</span>(ExcelTypeEnum.<span style="color:#a6e22e">XLSX</span>)
+</span></span><span style="display:flex;"><span>        .<span style="color:#a6e22e">sheet</span>(sheetName)
+</span></span><span style="display:flex;"><span>        .<span style="color:#a6e22e">doWrite</span>(list);
+</span></span><span style="display:flex;"><span>    outputSteam.<span style="color:#a6e22e">toByteArray</span>();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>线程代码</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#f92672">package</span> com.ffcs.gewp.scheduler.sal.service.manager.Impl;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.crmd.platform.base.utils.type.CollectionUtils;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.pub.context.BaseContext;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.pub.context.BaseContextInfo;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.pub.enums.DataMergeTypeEnum;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.pub.utils.SpringUtil;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.pub.utils.ThreadPoolUtil;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.service.strategy.BaseSchedulerStrategy;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.service.vo.RetBaseVo;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.kernel.service.vo.SchdulerStrategyConfigBaseVo;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.constants.enums.SalCommonEnum;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.service.convert.DTO2VoConvert;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.service.util.SalCommonUtils;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.visitmanage.entity.SchdulerStrategyConfig;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.visitmanage.manager.ISchdulerStrategyConfigManager;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.visitmanage.vo.SchdulerStrategyConfigVo;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.sal.visitmanage.vo.query.SchdulerStrategyConfigQueryVo;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.scheduler.sal.service.manager.ISchedulerStrategyManager;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> com.ffcs.gewp.scheduler.sal.service.param.SyncDataInParam;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> org.slf4j.Logger;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> org.slf4j.LoggerFactory;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> org.springframework.beans.factory.annotation.Autowired;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> org.springframework.stereotype.Service;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.Arrays;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.List;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.Optional;
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> java.util.concurrent.ThreadPoolExecutor;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * 通用轮询任务实现类
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author taowy
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> */</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@Service</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SchedulerStrategyManagerImpl</span> <span style="color:#66d9ef">implements</span> ISchedulerStrategyManager {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">final</span> Logger log <span style="color:#f92672">=</span> LoggerFactory.<span style="color:#a6e22e">getLogger</span>(SchedulerStrategyManagerImpl.<span style="color:#a6e22e">class</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Autowired</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> ISchdulerStrategyConfigManager schdulerStrategyConfigManager;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * @description 轮询多线程执行任务,注意控制线程安全和死锁
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * @param param 入参
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">@Override</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">run</span>(SyncDataInParam param) {
+</span></span><span style="display:flex;"><span>        log.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#34;[轮询任务策略模式]:开始准备执行轮询策略任务...&#34;</span>);
+</span></span><span style="display:flex;"><span>        SchdulerStrategyConfigQueryVo paramVo <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SchdulerStrategyConfigQueryVo();
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//查找待执行状态</span>
+</span></span><span style="display:flex;"><span>        Optional.<span style="color:#a6e22e">of</span>(SalCommonEnum.<span style="color:#a6e22e">STATE_70A</span>.<span style="color:#a6e22e">getCode</span>()).<span style="color:#a6e22e">ifPresent</span>(paramVo::setSchedulerStatusCd);
+</span></span><span style="display:flex;"><span>        paramVo.<span style="color:#a6e22e">setAppModule</span>(SalCommonEnum.<span style="color:#a6e22e">APP_MODULE_SAL</span>.<span style="color:#a6e22e">getCode</span>());
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//未处理轮询任务列表</span>
+</span></span><span style="display:flex;"><span>        List<span style="color:#f92672">&lt;</span>SchdulerStrategyConfig<span style="color:#f92672">&gt;</span> noDealTaskList <span style="color:#f92672">=</span> SchdulerStrategyConfig.<span style="color:#a6e22e">repository</span>().<span style="color:#a6e22e">complexQuery</span>(paramVo);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(CollectionUtils.<span style="color:#a6e22e">isEmpty</span>(noDealTaskList)){
+</span></span><span style="display:flex;"><span>            log.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#34;[轮询任务策略模式]:未查询到可执行的策略轮询任务...&#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//设置多线程的本地地线程变量</span>
+</span></span><span style="display:flex;"><span>        BaseContextInfo baseContext <span style="color:#f92672">=</span> BaseContext.<span style="color:#a6e22e">getBaseContextInfo</span>();
+</span></span><span style="display:flex;"><span>        ThreadPoolExecutor threadPoolExecutor <span style="color:#f92672">=</span> ThreadPoolUtil.<span style="color:#a6e22e">standardThreadPool</span>(4, 8, 2000L);
+</span></span><span style="display:flex;"><span>        log.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#34;[轮询任务策略模式]:线程池创建成功,当前线程池核心线程数为4,最大线程数为8&#34;</span>);
+</span></span><span style="display:flex;"><span>        noDealTaskList.<span style="color:#a6e22e">forEach</span>(entity <span style="color:#f92672">-&gt;</span> {
+</span></span><span style="display:flex;"><span>            entity.<span style="color:#a6e22e">setSchedulerStatusCd</span>(SalCommonEnum.<span style="color:#a6e22e">STATE_70B</span>.<span style="color:#a6e22e">getCode</span>());
+</span></span><span style="display:flex;"><span>            entity.<span style="color:#a6e22e">update</span>();
+</span></span><span style="display:flex;"><span>            threadPoolExecutor.<span style="color:#a6e22e">execute</span>(() <span style="color:#f92672">-&gt;</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span>(Optional.<span style="color:#a6e22e">ofNullable</span>(entity).<span style="color:#a6e22e">isPresent</span>()){
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">//执行策略</span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">execute</span>(entity,baseContext);
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            });
+</span></span><span style="display:flex;"><span>        });
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">//线程池不再接收线程任务</span>
+</span></span><span style="display:flex;"><span>        threadPoolExecutor.<span style="color:#a6e22e">shutdown</span>();
+</span></span><span style="display:flex;"><span>        log.<span style="color:#a6e22e">info</span>(<span style="color:#e6db74">&#34;[轮询任务策略模式]:当前线程池任务已添加完成&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">execute</span>(SchdulerStrategyConfig entity,BaseContextInfo baseContext){
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            SchdulerStrategyConfigBaseVo baseVo <span style="color:#f92672">=</span> DTO2VoConvert.<span style="color:#a6e22e">INSTANCE</span>.<span style="color:#a6e22e">toVo</span>(entity);
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">//设置线程名称</span>
+</span></span><span style="display:flex;"><span>            Optional.<span style="color:#a6e22e">of</span>(<span style="color:#e6db74">&#34;thread-pool-thread-&#34;</span> <span style="color:#f92672">+</span> entity.<span style="color:#a6e22e">getStrategyName</span>()).<span style="color:#a6e22e">ifPresent</span>(Thread.<span style="color:#a6e22e">currentThread</span>()::setName);
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">//设置本地线程变量</span>
+</span></span><span style="display:flex;"><span>            Optional.<span style="color:#a6e22e">ofNullable</span>(baseContext).<span style="color:#a6e22e">ifPresent</span>(BaseContext::setBaseContextInfo);
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">//获取策略类</span>
+</span></span><span style="display:flex;"><span>            BaseSchedulerStrategy schedulerStrategy <span style="color:#f92672">=</span> SpringUtil.<span style="color:#a6e22e">getBean</span>(entity.<span style="color:#a6e22e">getStrategyBeanId</span>(), BaseSchedulerStrategy.<span style="color:#a6e22e">class</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">//执行轮询任务策略</span>
+</span></span><span style="display:flex;"><span>            RetBaseVo retDto <span style="color:#f92672">=</span> Optional.<span style="color:#a6e22e">of</span>(baseVo).<span style="color:#a6e22e">map</span>(schedulerStrategy::execute).<span style="color:#a6e22e">orElse</span>(<span style="color:#66d9ef">null</span>);
+</span></span><span style="display:flex;"><span>            Optional.<span style="color:#a6e22e">ofNullable</span>(retDto).<span style="color:#a6e22e">map</span>(RetBaseVo::getDetailMsg).<span style="color:#a6e22e">map</span>(o<span style="color:#f92672">-&gt;</span>SalCommonUtils.<span style="color:#a6e22e">cutString</span>(o,4000)).<span style="color:#a6e22e">ifPresent</span>(entity::setRemark);
+</span></span><span style="display:flex;"><span>            Optional.<span style="color:#a6e22e">of</span>(SalCommonEnum.<span style="color:#a6e22e">STATE_70C</span>.<span style="color:#a6e22e">getCode</span>()).<span style="color:#a6e22e">ifPresent</span>(entity::setSchedulerStatusCd);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">catch</span> (Exception e){
+</span></span><span style="display:flex;"><span>            e.<span style="color:#a6e22e">printStackTrace</span>();
+</span></span><span style="display:flex;"><span>            log.<span style="color:#a6e22e">error</span>(e.<span style="color:#a6e22e">getMessage</span>());
+</span></span><span style="display:flex;"><span>            Optional.<span style="color:#a6e22e">ofNullable</span>(SalCommonUtils.<span style="color:#a6e22e">cutString</span>(e.<span style="color:#a6e22e">getMessage</span>(),4000)).<span style="color:#a6e22e">ifPresent</span>(entity::setRemark);
+</span></span><span style="display:flex;"><span>            Optional.<span style="color:#a6e22e">of</span>(SalCommonEnum.<span style="color:#a6e22e">STATE_70E</span>.<span style="color:#a6e22e">getCode</span>()).<span style="color:#a6e22e">ifPresent</span>(entity::setSchedulerStatusCd);
+</span></span><span style="display:flex;"><span>        } <span style="color:#66d9ef">finally</span> {
+</span></span><span style="display:flex;"><span>            updateStrategyConfig(entity);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * 修改轮询任务策略配置
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * @param entity
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * @return
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">private</span> Integer <span style="color:#a6e22e">updateStrategyConfig</span>(SchdulerStrategyConfig entity){
+</span></span><span style="display:flex;"><span>        SchdulerStrategyConfigVo param <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> SchdulerStrategyConfigVo();
+</span></span><span style="display:flex;"><span>        param.<span style="color:#a6e22e">setSchedulerConfigId</span>(entity.<span style="color:#a6e22e">getSchedulerConfigId</span>());
+</span></span><span style="display:flex;"><span>        param.<span style="color:#a6e22e">setSchedulerStatusCd</span>(entity.<span style="color:#a6e22e">getSchedulerStatusCd</span>());
+</span></span><span style="display:flex;"><span>        param.<span style="color:#a6e22e">setRemark</span>(entity.<span style="color:#a6e22e">getRemark</span>());
+</span></span><span style="display:flex;"><span>        param.<span style="color:#a6e22e">setMergeType</span>(DataMergeTypeEnum.<span style="color:#a6e22e">MOD</span>.<span style="color:#a6e22e">getCode</span>());
+</span></span><span style="display:flex;"><span>        param.<span style="color:#a6e22e">setMergeProperties</span>(Arrays.<span style="color:#a6e22e">asList</span>(SalCommonEnum.<span style="color:#a6e22e">SCHEDULER_STATUS_CD</span>.<span style="color:#a6e22e">getCode</span>()
+</span></span><span style="display:flex;"><span>                ,SalCommonEnum.<span style="color:#a6e22e">REMARK</span>.<span style="color:#a6e22e">getCode</span>()));
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> schdulerStrategyConfigManager.<span style="color:#a6e22e">update</span>(entity.<span style="color:#a6e22e">getSchedulerConfigId</span>(),<span style="color:#66d9ef">null</span>,param);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="其他问题">其他问题<a hidden class="anchor" aria-hidden="true" href="#其他问题">#</a></h2>
+<h3 id="apache-poi">Apache POI<a hidden class="anchor" aria-hidden="true" href="#apache-poi">#</a></h3>
+<ol>
+<li><strong>HSSFWorkbook</strong><!-- raw HTML omitted -->：代表一个 Excel 文件，对应于 Excel 97-2003 格式的 <!-- raw HTML omitted --><strong>.xls</strong><!-- raw HTML omitted --> 文件。它使用 HSSF（Horrible Spreadsheet Format）来处理 Excel 文件，适用于较旧版本的 Excel。<!-- raw HTML omitted --></li>
+<li><strong>XSSFWorkbook</strong><!-- raw HTML omitted -->：代表一个 Excel 文件，对应于 Excel 2007+ 格式的 <!-- raw HTML omitted --><strong>.xlsx</strong><!-- raw HTML omitted --> 文件。它使用 XSSF（XML Spreadsheet Format）来处理 Excel 文件，支持更大的数据量和更多的功能，适用于较新版本的 Excel。<!-- raw HTML omitted --></li>
+<li><strong>SXSSFWorkbook</strong><!-- raw HTML omitted -->：是 XSSFWorkbook 的扩展，用于处理大量数据的导出。它使用了一种流式写入（Streaming Write）的方式，可以将数据写入到临时文件中，从而避免内存溢出的问题。<!-- raw HTML omitted --></li>
+<li><strong>XSSFWorkbook（Streaming）</strong><!-- raw HTML omitted -->：另外还有一种基于 XML 文件的流式读取（Streaming Read）方式，可以读取大量数据的 Excel 文件而不会导致内存溢出，但是这种方式并不是 POI 提供的官方支持，而是一些第三方库提供的扩展。<!-- raw HTML omitted --></li>
+</ol>
+<h3 id="easyexcel">EasyExcel<a hidden class="anchor" aria-hidden="true" href="#easyexcel">#</a></h3>
+<blockquote>
+<p>更新: 2024-05-02 21:52:13<br>
+原文: <a href="https://www.yuque.com/lujianuse/notes/xag6e59tisz88xr2">https://www.yuque.com/lujianuse/notes/xag6e59tisz88xr2</a></p></blockquote>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">My New Hugo Site</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
