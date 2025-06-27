@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <head>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+    <meta name="robots" content="noodp" />
+    <title>🖥Window实现睡眠定时任务 - 个人主页</title><meta name="author" content="luqiCraft">
+<meta name="description" content="1 定时任务设置 控制面版 -&gt; 系统和安全 -&gt; 计划任务 -&gt; 创建任务
+"><meta name="keywords" content='window, 定时任务'>
+  <meta itemprop="name" content="🖥window实现睡眠定时任务">
+  <meta itemprop="description" content="1 定时任务设置 控制面版 -&gt; 系统和安全 -&gt; 计划任务 -&gt; 创建任务">
+  <meta itemprop="datePublished" content="2025-06-27T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2025-06-27T00:00:00+00:00">
+  <meta itemprop="wordCount" content="81">
+  <meta itemprop="keywords" content="Window,定时任务"><meta property="og:url" content="https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/">
+  <meta property="og:site_name" content="个人主页">
+  <meta property="og:title" content="🖥window实现睡眠定时任务">
+  <meta property="og:description" content="1 定时任务设置 控制面版 -&gt; 系统和安全 -&gt; 计划任务 -&gt; 创建任务">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-06-27T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-06-27T00:00:00+00:00">
+    <meta property="article:tag" content="Window">
+    <meta property="article:tag" content="定时任务">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="🖥window实现睡眠定时任务">
+  <meta name="twitter:description" content="1 定时任务设置 控制面版 -&gt; 系统和安全 -&gt; 计划任务 -&gt; 创建任务">
+<meta name="application-name" content="FixIt">
+<meta name="apple-mobile-web-app-title" content="FixIt"><meta name="theme-color" data-light="#f8f8f8" data-dark="#252627" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" type="text/html" href="https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" title="🖥window实现睡眠定时任务 - 个人主页" /><link rel="prev" type="text/html" href="https://luqi678.github.io/luqicraft/posts/rocketmq%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80/" title="✅RocketMQ部署以及基础" /><link rel="alternate" type="text/markdown" href="https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/index.md" title="🖥window实现睡眠定时任务 - 个人主页"><link rel="stylesheet" href="/luqicraft/css/style.min.css"><link rel="preload" href="/luqicraft/lib/fontawesome-free/all.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/luqicraft/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" href="/luqicraft/lib/animate/animate.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/luqicraft/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BlogPosting",
+    "headline": "🖥window实现睡眠定时任务",
+    "inLanguage": "zh-CN",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https:\/\/luqi678.github.io\/luqicraft\/posts\/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1\/"
+    },"genre": "posts","keywords": "window, 定时任务","wordcount":  81 ,
+    "url": "https:\/\/luqi678.github.io\/luqicraft\/posts\/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1\/","datePublished": "2025-06-27T00:00:00+00:00","dateModified": "2025-06-27T00:00:00+00:00","publisher": {
+      "@type": "Organization",
+      "name": ""},"author": {
+        "@type": "Person",
+        "name": "luqiCraft"
+      },"description": ""
+  }
+  </script><script src="/luqicraft/js/head/color-scheme.min.js"></script></head>
+  <body data-header-desktop="sticky" data-header-mobile="auto"><div class="wrapper" data-page-style="normal"><header class="desktop animate__faster" id="header-desktop">
+  <div class="header-wrapper">
+    <div class="header-title">
+      <a href="/luqicraft/" title="个人主页"><span class="header-title-text">个人主页</span></a><span class="header-subtitle"></span></div>
+    <nav>
+      <ul class="menu"><li class="menu-item">
+              <a class="menu-link" href="/luqicraft/archives/"><i class="fa-solid fa-archive fa-fw fa-sm" aria-hidden="true"></i> 归档</a></li><li class="menu-item">
+              <a class="menu-link" href="/luqicraft/categories/"><i class="fa-solid fa-folder-tree fa-fw fa-sm" aria-hidden="true"></i> 分类</a></li><li class="menu-item">
+              <a class="menu-link" href="/luqicraft/tags/"><i class="fa-solid fa-tags fa-fw fa-sm" aria-hidden="true"></i> 标签</a></li><li class="menu-item">
+              <a class="menu-link" href="/luqicraft/about/"><i class="fa-solid fa-tags fa-fw fa-sm" aria-hidden="true"></i> 关于</a></li><li class="menu-item delimiter"></li><li class="menu-item theme-switch" title="切换主题">
+          <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+        </li></ul>
+    </nav>
+  </div>
+</header><header class="mobile animate__faster" id="header-mobile">
+  <div class="header-container">
+    <div class="header-wrapper">
+      <div class="header-title">
+        <a href="/luqicraft/" title="个人主页"><span class="header-title-text">个人主页</span></a><span class="header-subtitle"></span></div>
+      <div class="menu-toggle" id="menu-toggle-mobile">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <nav>
+      <ul class="menu" id="menu-mobile"><li class="menu-item"><a class="menu-link" href="/luqicraft/archives/"><i class="fa-solid fa-archive fa-fw fa-sm" aria-hidden="true"></i> 归档</a></li><li class="menu-item"><a class="menu-link" href="/luqicraft/categories/"><i class="fa-solid fa-folder-tree fa-fw fa-sm" aria-hidden="true"></i> 分类</a></li><li class="menu-item"><a class="menu-link" href="/luqicraft/tags/"><i class="fa-solid fa-tags fa-fw fa-sm" aria-hidden="true"></i> 标签</a></li><li class="menu-item"><a class="menu-link" href="/luqicraft/about/"><i class="fa-solid fa-tags fa-fw fa-sm" aria-hidden="true"></i> 关于</a></li><li class="menu-item menu-system">
+          <span class="menu-system-item theme-switch" title="切换主题"><i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i></span></li>
+      </ul>
+    </nav>
+  </div>
+</header><main class="container"><aside class="aside-collection animate__animated animate__fadeIn animate__faster" aria-label="合集"></aside>
+
+  <article class="page single">
+    <div class="header"><h1 class="single-title animate__animated animate__flipInX"><span>🖥Window实现睡眠定时任务</span>
+      </h1></div><div class="post-meta">
+      <div class="post-meta-line"><span class="post-author"><a href="https://luqi678.github.io/luqicraft" title="作者"target="_blank" rel="external nofollow noopener noreferrer author" class="author"><img class="avatar" src='/luqicraft/images/avatar.jpeg' alt="luqiCraft" height="16" width="16">&nbsp;luqiCraft</a></span><span class="post-included-in">&nbsp;收录于 <a href="/luqicraft/categories/%E6%95%99%E7%A8%8B/" class="post-category" title="分类 - 教程"><i class="fa-regular fa-folder fa-fw" aria-hidden="true"></i> 教程</a></span></div><div class="post-meta-line"><span title="发布于 2025-06-27 00:00:00"><i class="fa-solid fa-calendar-days fa-fw me-1" aria-hidden="true"></i><time datetime="2025-06-27">2025-06-27</time></span>&nbsp;<span title="81 字"><i class="fa-solid fa-pencil-alt fa-fw me-1" aria-hidden="true"></i>约 100 字</span>&nbsp;<span><i class="fa-regular fa-clock fa-fw me-1" aria-hidden="true"></i>预计阅读 1 分钟</span>&nbsp;</div>
+    </div><div class="details toc" id="toc-static" data-kept="false">
+        <div class="details-summary toc-title">
+          <span>目录</span>
+          <span><i class="details-icon fa-solid fa-angle-right" aria-hidden="true"></i></span>
+        </div>
+        <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-定时任务设置">1 定时任务设置</a></li>
+    <li><a href="#2-电源模式设置">2 电源模式设置</a>
+      <ul>
+        <li><a href="#21-电源模式选择">2.1 电源模式选择</a></li>
+        <li><a href="#22-电源模式设置">2.2 电源模式设置</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-睡眠模式设置">3 睡眠模式设置</a>
+      <ul>
+        <li><a href="#31-查询睡眠模式-cmd执行">3.1 查询睡眠模式 cmd执行</a></li>
+        <li><a href="#32-若结果为-待机s0--修改为s3-cmd管理员模式执行">3.2 若结果为 待机(S0)  修改为(S3) cmd(管理员模式)执行</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-执行">4 执行</a></li>
+    <li><a href="#引用">引用</a></li>
+  </ul>
+</nav></div>
+      </div><div class="content" id="content"><h2 class="heading-element" id="1-定时任务设置"><span>1 定时任务设置</span>
+  <a href="#1-%e5%ae%9a%e6%97%b6%e4%bb%bb%e5%8a%a1%e8%ae%be%e7%bd%ae" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><p>控制面版 -&gt; 系统和安全 -&gt; 计划任务 -&gt; 创建任务</p>
+<p><img loading="lazy" src='/assets/Pasted%20image%2020250627150003.png' alt="/assets/Pasted%20image%2020250627150003.png"></p>
+<p><img loading="lazy" src='/assets/Pasted%20image%2020250627150054.png' alt="/assets/Pasted%20image%2020250627150054.png"></p>
+<p><img loading="lazy" src='/assets/Pasted%20image%2020250627150340.png' alt="/assets/Pasted%20image%2020250627150340.png"></p>
+<p><img loading="lazy" src='/assets/Pasted%20image%2020250627150422.png' alt="/assets/Pasted%20image%2020250627150422.png"></p>
+<h2 class="heading-element" id="2-电源模式设置"><span>2 电源模式设置</span>
+  <a href="#2-%e7%94%b5%e6%ba%90%e6%a8%a1%e5%bc%8f%e8%ae%be%e7%bd%ae" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><h3 class="heading-element" id="21-电源模式选择"><span>2.1 电源模式选择</span>
+  <a href="#21-%e7%94%b5%e6%ba%90%e6%a8%a1%e5%bc%8f%e9%80%89%e6%8b%a9" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><p>设置 -&gt; 系统 -&gt; 电源 -&gt; 电源模式 -&gt; 平衡（也可以选其他的，选择哪个后面就修改哪个）</p>
+<h3 class="heading-element" id="22-电源模式设置"><span>2.2 电源模式设置</span>
+  <a href="#22-%e7%94%b5%e6%ba%90%e6%a8%a1%e5%bc%8f%e8%ae%be%e7%bd%ae" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><p>控制面版 -&gt; 系统和安全 -&gt; 电源选项 -&gt; 更改计划设置 -&gt; 更改高级电源设置</p>
+<p><img loading="lazy" src='/assets/Pasted%20image%2020250627151040.png' alt="/assets/Pasted%20image%2020250627151040.png"></p>
+<h2 class="heading-element" id="3-睡眠模式设置"><span>3 睡眠模式设置</span>
+  <a href="#3-%e7%9d%a1%e7%9c%a0%e6%a8%a1%e5%bc%8f%e8%ae%be%e7%bd%ae" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><h3 class="heading-element" id="31-查询睡眠模式-cmd执行"><span>3.1 查询睡眠模式 cmd执行</span>
+  <a href="#31-%e6%9f%a5%e8%af%a2%e7%9d%a1%e7%9c%a0%e6%a8%a1%e5%bc%8f-cmd%e6%89%a7%e8%a1%8c" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cmd" data-lang="cmd"><span class="line"><span class="cl">powercfg /a</span></span></code></pre></td></tr></table>
+</div>
+</div><p>正常：
+<img loading="lazy" src='/assets/Pasted%20image%2020250627151558.png' alt="/assets/Pasted%20image%2020250627151558.png"></p>
+<h3 class="heading-element" id="32-若结果为-待机s0--修改为s3-cmd管理员模式执行"><span>3.2 若结果为 待机(S0)  修改为(S3) cmd(管理员模式)执行</span>
+  <a href="#32-%e8%8b%a5%e7%bb%93%e6%9e%9c%e4%b8%ba-%e5%be%85%e6%9c%bas0--%e4%bf%ae%e6%94%b9%e4%b8%bas3-cmd%e7%ae%a1%e7%90%86%e5%91%98%e6%a8%a1%e5%bc%8f%e6%89%a7%e8%a1%8c" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">reg add &#34;HKLM\SYSTEM\CurrentControlSet\Control\Power&#34; /v PlatformAoAcOverride /t REG_DWORD /d 0 /f</span></span></code></pre></td></tr></table>
+</div>
+</div><p>修改完需要重启，重复 2.3.1 ， 结果为 待机(S3) 则正常</p>
+<h2 class="heading-element" id="4-执行"><span>4 执行</span>
+  <a href="#4-%e6%89%a7%e8%a1%8c" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><p>ctrl + x -&gt; 注销或重启 -&gt; 睡眠 -&gt; 等待设置的定时时间执行程序
+<img loading="lazy" src='/assets/Pasted%20image%2020250627151815.png' alt="/assets/Pasted%20image%2020250627151815.png"></p>
+<h2 class="heading-element" id="引用"><span>引用</span>
+  <a href="#%e5%bc%95%e7%94%a8" class="heading-mark">
+    <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z"></path></svg>
+  </a>
+</h2><p><strong>版权声明：本文为博主原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接和本声明。</strong></p>
+</div><div class="post-footer" id="post-footer">
+  <div class="post-info">
+    <div class="post-info-line">
+      <div class="post-info-mod">
+        <span title="更新于 2025-06-27 00:00:00">更新于 2025-06-27&nbsp;</span>
+      </div><div class="post-info-license">
+            <span><a rel="license external nofollow noopener noreferrer" href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a></span>
+          </div></div><div class="post-info-line">
+        <div class="post-info-md"><span><a href="/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/index.md" title="阅读原始文档" class="link-to-markdown">阅读原始文档</a></span></div>
+        <div class="post-info-share">
+          <span><a href="javascript:void(0);" title="分享到 X" data-sharer="twitter" data-url="https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" data-title="🖥Window实现睡眠定时任务" data-hashtags="window,定时任务"><i class="fa-brands fa-x-twitter fa-fw" aria-hidden="true"></i></a>
+  <a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" data-hashtag="window"><i class="fa-brands fa-facebook-square fa-fw" aria-hidden="true"></i></a>
+  <a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" data-title="🖥Window实现睡眠定时任务" data-ralateuid="u/5241128999"><i class="fa-brands fa-weibo fa-fw" aria-hidden="true"></i></a>
+  </span>
+        </div>
+      </div></div>
+
+  <div class="post-info-more">
+    <section class="post-tags"><i class="fa-solid fa-tags fa-fw me-1" aria-hidden="true"></i><a href="/luqicraft/tags/window/" class="post-tag" title="标签 - Window">Window</a><a href="/luqicraft/tags/%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" class="post-tag" title="标签 - 定时任务">定时任务</a></section>
+    <section>
+      <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/luqicraft/">主页</a></span>
+    </section>
+  </div><div class="post-nav"><a href="/luqicraft/posts/rocketmq%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80/" class="post-nav-item" rel="prev" title="✅RocketMQ部署以及基础"><i class="fa-solid fa-angle-left fa-fw" aria-hidden="true"></i>✅RocketMQ部署以及基础</a></div>
+</div>
+</article>
+
+  <aside class="toc" id="toc-auto" aria-label="目录"><h2 class="toc-title">目录&nbsp;<i class="toc-icon fa-solid fa-angle-down fa-fw" aria-hidden="true"></i></h2>
+      <div class="toc-content" id="toc-content-auto"></div></aside></main><footer class="footer">
+    <div class="footer-container"><div class="footer-line powered">由 <a href="https://gohugo.io/" target="_blank" rel="external nofollow noopener noreferrer" title="Hugo 0.147.8"><img class="hugo-icon" src="/luqicraft/images/hugo.min.svg" alt="Hugo logo" /> Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/hugo-fixit/FixIt" target="_blank" rel="external" title="FixIt v0.3.20"><img class="fixit-icon" src="/luqicraft/images/fixit.min.svg" alt="FixIt logo" /> FixIt</a>
+        </div><div class="footer-line copyright" itemscope itemtype="http://schema.org/CreativeWork"><i class="fa-regular fa-copyright fa-fw" aria-hidden="true"></i>
+            <span itemprop="copyrightYear">2025</span><span class="author" itemprop="copyrightHolder">
+              <a href="https://luqi678.github.io/luqicraft"target="_blank" rel="external nofollow noopener noreferrer">luqiCraft</a></span></div></div>
+  </footer></div><div class="widgets"><div class="fixed-buttons animate__faster d-none"><div class="fixed-button back-to-top" role="button" aria-label="回到顶部"><i class="fa-solid fa-arrow-up fa-fw" aria-hidden="true"></i><span class="variant-numeric d-none">0%</span>
+        </div></div><div id="mask"></div><noscript>
+    <div class="noscript-warning">该网站在启用 JavaScript 的情况下效果最佳。</div>
+  </noscript>
+</div><link rel="preload" href="/luqicraft/lib/katex/katex.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/luqicraft/lib/katex/katex.min.css"></noscript><link rel="stylesheet" href="/luqicraft/lib/cookieconsent/cookieconsent.min.css"><script src="/luqicraft/lib/sharer/sharer.min.js" async defer></script><script src="/luqicraft/lib/katex/katex.min.js" defer></script><script src="/luqicraft/lib/katex/auto-render.min.js" defer></script><script src="/luqicraft/lib/katex/copy-tex.min.js" defer></script><script src="/luqicraft/lib/katex/mhchem.min.js" defer></script><script src="/luqicraft/lib/cookieconsent/cookieconsent.min.js" defer></script><script>window.config={"code":{"copyTitle":"复制到剪贴板","editLockTitle":"锁定可编辑代码块","editUnLockTitle":"解锁可编辑代码块","editable":true,"maxShownLines":10},"comment":{"enable":false},"cookieconsent":{"content":{"dismiss":"同意","link":"了解更多","message":"本网站使用 Cookies 来改善您的浏览体验。"},"enable":true,"palette":{"button":{"background":"#f0f0f0"},"popup":{"background":"#1aa3ff"}},"theme":"edgeless"},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":true,"left":"\\begin{equation}","right":"\\end{equation}"},{"display":true,"left":"\\begin{equation*}","right":"\\end{equation*}"},{"display":true,"left":"\\begin{align}","right":"\\end{align}"},{"display":true,"left":"\\begin{align*}","right":"\\end{align*}"},{"display":true,"left":"\\begin{alignat}","right":"\\end{alignat}"},{"display":true,"left":"\\begin{alignat*}","right":"\\end{alignat*}"},{"display":true,"left":"\\begin{gather}","right":"\\end{gather}"},{"display":true,"left":"\\begin{CD}","right":"\\end{CD}"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"version":"v0.3.20"};</script><script src="/luqicraft/js/theme.min.js" defer></script></body>
+</html>
