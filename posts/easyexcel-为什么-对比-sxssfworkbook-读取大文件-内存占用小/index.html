@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
     <meta name="robots" content="noodp" />
-    <title>📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小 - 路奇的个人主页</title><meta name="author" content="luqiCraft">
+    <title>📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小 - 个人主页</title><meta name="author" content="luqiCraft">
 <meta name="description" content="EasyExcel 为什么比 SXSSFWorkbook 读取大文件内存占用小？ 一、核心结论 EasyExcel 在读取大 Excel 文件时内存占用更小，主要是因为它采用了 SAX 事件驱动的流式读取方式，而 SXSSFWorkbook 本质仍依赖 DOM 模式读取。
 "><meta name="keywords" content='EasyExcel, 文件管理, POI'>
   <meta itemprop="name" content="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小">
@@ -14,7 +14,7 @@
   <meta itemprop="dateModified" content="2025-06-18T00:00:00+00:00">
   <meta itemprop="wordCount" content="154">
   <meta itemprop="keywords" content="EasyExcel,文件管理,POI"><meta property="og:url" content="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/">
-  <meta property="og:site_name" content="路奇的个人主页">
+  <meta property="og:site_name" content="个人主页">
   <meta property="og:title" content="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小">
   <meta property="og:description" content="EasyExcel 为什么比 SXSSFWorkbook 读取大文件内存占用小？ 一、核心结论 EasyExcel 在读取大 Excel 文件时内存占用更小，主要是因为它采用了 SAX 事件驱动的流式读取方式，而 SXSSFWorkbook 本质仍依赖 DOM 模式读取。">
   <meta property="og:locale" content="zh_CN">
@@ -32,7 +32,7 @@
 <meta name="application-name" content="FixIt">
 <meta name="apple-mobile-web-app-title" content="FixIt"><meta name="theme-color" data-light="#f8f8f8" data-dark="#252627" content="#f8f8f8"><meta name="msapplication-TileColor" content="#da532c"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" type="text/html" href="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/" title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小 - 路奇的个人主页" /><link rel="prev" type="text/html" href="https://luqi678.github.io/luqicraft/about/" title="📝关于我" /><link rel="alternate" type="text/markdown" href="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/index.md" title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小 - 路奇的个人主页"><link rel="stylesheet" href="/luqicraft/css/style.min.css"><link rel="preload" href="/luqicraft/lib/fontawesome-free/all.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5"><link rel="canonical" type="text/html" href="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/" title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小 - 个人主页" /><link rel="prev" type="text/html" href="https://luqi678.github.io/luqicraft/about/" title="📝关于我" /><link rel="next" type="text/html" href="https://luqi678.github.io/luqicraft/posts/rocketmq%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80/" title="✅RocketMQ部署以及基础" /><link rel="alternate" type="text/markdown" href="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/index.md" title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小 - 个人主页"><link rel="stylesheet" href="/luqicraft/css/style.min.css"><link rel="preload" href="/luqicraft/lib/fontawesome-free/all.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/luqicraft/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" href="/luqicraft/lib/animate/animate.min.css" as="style" onload="this.removeAttribute('onload');this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="/luqicraft/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
   {
@@ -55,7 +55,7 @@
   <body data-header-desktop="sticky" data-header-mobile="auto"><div class="wrapper" data-page-style="normal"><header class="desktop animate__faster" id="header-desktop">
   <div class="header-wrapper">
     <div class="header-title">
-      <a href="/luqicraft/" title="路奇的个人主页"><span class="header-title-text">路奇的个人主页</span></a><span class="header-subtitle"></span></div>
+      <a href="/luqicraft/" title="个人主页"><span class="header-title-text">个人主页</span></a><span class="header-subtitle"></span></div>
     <nav>
       <ul class="menu"><li class="menu-item">
               <a class="menu-link" href="/luqicraft/archives/"><i class="fa-solid fa-archive fa-fw fa-sm" aria-hidden="true"></i> 归档</a></li><li class="menu-item">
@@ -70,7 +70,7 @@
   <div class="header-container">
     <div class="header-wrapper">
       <div class="header-title">
-        <a href="/luqicraft/" title="路奇的个人主页"><span class="header-title-text">路奇的个人主页</span></a><span class="header-subtitle"></span></div>
+        <a href="/luqicraft/" title="个人主页"><span class="header-title-text">个人主页</span></a><span class="header-subtitle"></span></div>
       <div class="menu-toggle" id="menu-toggle-mobile">
         <span></span><span></span><span></span>
       </div>
@@ -333,7 +333,7 @@
         <div class="post-info-share">
           <span><a href="javascript:void(0);" title="分享到 X" data-sharer="twitter" data-url="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/" data-title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小" data-hashtags="EasyExcel,文件管理,POI"><i class="fa-brands fa-x-twitter fa-fw" aria-hidden="true"></i></a>
   <a href="javascript:void(0);" title="分享到 Facebook" data-sharer="facebook" data-url="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/" data-hashtag="EasyExcel"><i class="fa-brands fa-facebook-square fa-fw" aria-hidden="true"></i></a>
-  <a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/" data-title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小"><i class="fa-brands fa-weibo fa-fw" aria-hidden="true"></i></a>
+  <a href="javascript:void(0);" title="分享到 微博" data-sharer="weibo" data-url="https://luqi678.github.io/luqicraft/posts/easyexcel-%E4%B8%BA%E4%BB%80%E4%B9%88-%E5%AF%B9%E6%AF%94-sxssfworkbook-%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6-%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%B0%8F/" data-title="📝EasyExcel 为什么 对比 SXSSFworkbook 读取大文件 内存占用小" data-ralateuid="u/5241128999"><i class="fa-brands fa-weibo fa-fw" aria-hidden="true"></i></a>
   </span>
         </div>
       </div></div>
@@ -343,7 +343,7 @@
     <section>
       <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/luqicraft/">主页</a></span>
     </section>
-  </div><div class="post-nav"><a href="/luqicraft/posts/%E5%9F%BA%E4%BA%8Ehugo%E4%BD%BF%E7%94%A8fixlt%E4%B8%BB%E9%A2%98%E6%9E%84%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" class="post-nav-item" rel="prev" title="📝基于Hugo使用Fixlt主题构建个人博客"><i class="fa-solid fa-angle-left fa-fw" aria-hidden="true"></i>📝基于Hugo使用Fixlt主题构建个人博客</a></div>
+  </div><div class="post-nav"><a href="/luqicraft/posts/%E5%9F%BA%E4%BA%8Ehugo%E4%BD%BF%E7%94%A8fixlt%E4%B8%BB%E9%A2%98%E6%9E%84%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" class="post-nav-item" rel="prev" title="📝基于Hugo使用Fixlt主题构建个人博客"><i class="fa-solid fa-angle-left fa-fw" aria-hidden="true"></i>📝基于Hugo使用Fixlt主题构建个人博客</a><a href="/luqicraft/posts/rocketmq%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80/" class="post-nav-item" rel="next" title="✅RocketMQ部署以及基础">✅RocketMQ部署以及基础<i class="fa-solid fa-angle-right fa-fw" aria-hidden="true"></i></a></div>
 </div>
 </article>
 

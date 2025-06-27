@@ -55,8 +55,29 @@ hugo version
 hogo server
 ```
 
+## 备注
+
+在markdown添加引用图片方式为
+
+```
+[](/images/xxx.png)
+```
+
+images文件夹目录在 根目录/static 下新建 
+
+域名头 可加可不加 但是 路径开头/ 不能少 比如
+
+```
+[](/lujiancraft/images/xxx.png)
+```
+
+
+
+
+
+
+
 ## 引用
-[基于EasyExcel+线程池+定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题](03-Projects/05-语雀/download/积累/项目亮点&难点/基于EasyExcel+线程池+定时轮询服务解决POI文件导出大量数据时的内存溢出及超时问题.md)
 
 ---
 
