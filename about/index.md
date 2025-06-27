@@ -23,13 +23,13 @@
 
 ## 📚 教育背景
 
-- 本科，计算机科学与技术，XX大学
+- 本科，计算机科学与技术，福建师范大学
 
 ---
 
 ## 🧑‍💻 工作经历
 
-- 高级后端开发工程师，专注于大型系统开发与维护，有 5-8 年工作经验
+- 高级后端开发工程师，专注于大型系统开发与维护，有 4 年工作经验
 
 ---
 
@@ -41,9 +41,9 @@
 
 ## 📫 联系方式
 
-- 📧 邮箱：[your_email@example.com]
-- 📝 博客：[你的博客链接]
-- 🐙 GitHub：[https://github.com/你的GitHub用户名](https://github.com/你的GitHub用户名)
+- 📧 邮箱：[lujianuse@163.com]
+- 📝 博客：[路奇的博客](https://luqi678.github.io/luqicraft/)
+- 🐙 GitHub：[https://github.com/luqi678](https://github.com/luqi678)
 
 ---
 
@@ -56,8 +56,6 @@
 ---
 
 感谢你访问我的关于页！🙌
-
-你可以在导航栏点击“关于我”或访问 `/about/` 查看本页内容。
 
 
 
