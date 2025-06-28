@@ -72,5 +72,5 @@ docker run -d --name rmq-dashboard --network rocketmq-net \
 ---
 
 > 作者: [luqiCraft](https://luqi678.github.io/luqicraft)  
-> URL: https://luqi678.github.io/posts/rocketmq%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80/  
+> URL: https://luqi678.github.io/luqicraft/posts/rocketmq%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80/  
 

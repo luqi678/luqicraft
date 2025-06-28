@@ -62,5 +62,5 @@
 ---
 
 > 作者: <no value>  
-> URL: https://luqi678.github.io/about/  
+> URL: https://luqi678.github.io/luqicraft/about/  
 

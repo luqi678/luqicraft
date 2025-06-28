@@ -82,5 +82,5 @@ images文件夹目录在 根目录/static 下新建
 ---
 
 > 作者: [luqiCraft](https://luqi678.github.io/luqicraft)  
-> URL: https://luqi678.github.io/posts/%E5%9F%BA%E4%BA%8Ehugo%E4%BD%BF%E7%94%A8fixlt%E4%B8%BB%E9%A2%98%E6%9E%84%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/  
+> URL: https://luqi678.github.io/luqicraft/posts/%E5%9F%BA%E4%BA%8Ehugo%E4%BD%BF%E7%94%A8fixlt%E4%B8%BB%E9%A2%98%E6%9E%84%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/  
 
