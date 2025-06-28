@@ -47,5 +47,5 @@ ctrl + x -> 注销或重启 -> 睡眠 -> 等待设置的定时时间执行程序
 ---
 
 > 作者: [luqiCraft](https://luqi678.github.io/luqicraft)  
-> URL: https://luqi678.github.io/luqicraft/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/  
+> URL: https://luqi678.github.io/posts/window%E5%AE%9E%E7%8E%B0%E7%9D%A1%E7%9C%A0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/  
 
